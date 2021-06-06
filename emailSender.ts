@@ -3,9 +3,16 @@
 const nodemailer = require("nodemailer");
 let fs = require("fs");
 const emailGenerator = require("./emailGenerator.ts");
-const cron = require("node-cron");
+const CronJob = require("cron").CronJob;
+const CronTime = require("cron").CronTime;
 const axios = require("axios");
 require("dotenv").config();
+const express = require("express");
+const app = express();
+const port = 3010;
+let cronTask;
+
+let sendDate = "0 12 * * 5";
 let users = [];
 let news = [];
 
@@ -14,6 +21,37 @@ const options = {
         Authorization: process.env.authToken,
     },
 };
+
+cronTask = new CronJob("0 12 * * 5", function () {
+    getData();
+});
+cronTask.start();
+//ACTUALIZAR FECHA DE ACTUALIZACION
+let test = [];
+app.get("/", (req, res) => {
+    // let datePromise = new Promise((resolve, reject) => {
+    //     axios
+    //         .get(process.env.apiUrl + "senddate", options)
+    //         .then((r) => (sendDate = r.data[0].date));
+    //     resolve(sendDate);
+    // });
+
+    // datePromise.then(() => console.log(sendDate));
+    // datePromise.then(() => cronTask.setTime(new CronTime(sendDate)));
+    // datePromise.then(() => cronTask.start());
+    // datePromise.then(() => res.send(`fecha cambiada a ${sendDate}`));
+
+    axios
+        .get(process.env.apiUrl + "senddate", options)
+        .then((r) => (test = r.data))
+        .then(() => console.log(`test ${test[0].date}`))
+        .then(() => (sendDate = test[0].date))
+        .then(console.log(`test2 ${sendDate}`))
+        .then(cronTask.setTime(new CronTime(sendDate)))
+        .then(cronTask.start())
+        .then(console.log(`test3 ${sendDate}`))
+        .then(res.send(`cambiado a ${sendDate}`));
+});
 
 function getData() {
     users = [];
@@ -35,7 +73,7 @@ function getData() {
 function buildEmail(users, news) {
     users.forEach((u) => {
         let tags = [];
-        u.tag.forEach((element) => {
+        u.tags.forEach((element) => {
             tags.push(element.name);
         });
         let builtEmailBody = emailGenerator(news, tags);
@@ -51,7 +89,7 @@ function buildEmail(users, news) {
 }
 
 //SOLO PARA VER QUE FUNCIONA EL TIMER
-console.log(new Date().getMinutes());
+console.log(sendDate);
 
 var transport = nodemailer.createTransport({
     host: "smtp.mailtrap.io",
@@ -70,12 +108,8 @@ transport.verify(function (error) {
     }
 });
 
-cron.schedule("0 12 * * 5", () => {
-    getData();
-});
-
 //TEMPORAL PARA LANZARLO SIN CRON
-getData();
+//getData();
 
 function sendEmail(bodyEmail, email) {
     transport.sendMail(
@@ -94,3 +128,7 @@ function sendEmail(bodyEmail, email) {
         }
     );
 }
+
+app.listen(port, () => {
+    console.log(`emailSender escuchando en el puerto ${port}`);
+});
