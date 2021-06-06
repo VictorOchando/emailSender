@@ -50,7 +50,8 @@ app.get("/", (req, res) => {
         .then(cronTask.setTime(new CronTime(sendDate)))
         .then(cronTask.start())
         .then(console.log(`test3 ${sendDate}`))
-        .then(res.send(`cambiado a ${sendDate}`));
+        .then(res.send(`cambiado a ${sendDate}`))
+        .catch((err) => console.log(err));
 });
 
 function getData() {
