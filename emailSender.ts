@@ -1,5 +1,7 @@
 //TODO: forzar saltos de linea, por que fs2 en el generator
 
+import { createConstructSignature } from "typescript";
+
 const nodemailer = require("nodemailer");
 let fs = require("fs");
 const emailGenerator = require("./emailGenerator.ts");
@@ -12,7 +14,6 @@ const app = express();
 const port = 3010;
 let cronTask;
 
-let sendDate = "0 12 * * 5";
 let users = [];
 let news = [];
 
@@ -27,30 +28,15 @@ cronTask = new CronJob("0 12 * * 5", function () {
 });
 cronTask.start();
 //ACTUALIZAR FECHA DE ACTUALIZACION
-let test = [];
+
 app.get("/", (req, res) => {
-    // let datePromise = new Promise((resolve, reject) => {
-    //     axios
-    //         .get(process.env.apiUrl + "senddate", options)
-    //         .then((r) => (sendDate = r.data[0].date));
-    //     resolve(sendDate);
-    // });
-
-    // datePromise.then(() => console.log(sendDate));
-    // datePromise.then(() => cronTask.setTime(new CronTime(sendDate)));
-    // datePromise.then(() => cronTask.start());
-    // datePromise.then(() => res.send(`fecha cambiada a ${sendDate}`));
-
     axios
         .get(process.env.apiUrl + "senddate", options)
-        .then((r) => (test = r.data))
-        .then(() => console.log(`test ${test[0].date}`))
-        .then(() => (sendDate = test[0].date))
-        .then(console.log(`test2 ${sendDate}`))
-        .then(cronTask.setTime(new CronTime(sendDate)))
-        .then(cronTask.start())
-        .then(console.log(`test3 ${sendDate}`))
-        .then(res.send(`cambiado a ${sendDate}`))
+        .then((r) => r.data)
+        .then((r) => r[0].date)
+        .then((r) => cronTask.setTime(new CronTime(r)))
+        .then((r) => cronTask.start())
+        .then((r) => res.send(`Fecha cambiada correctamente`))
         .catch((err) => console.log(err));
 });
 
@@ -89,15 +75,12 @@ function buildEmail(users, news) {
     });
 }
 
-//SOLO PARA VER QUE FUNCIONA EL TIMER
-console.log(sendDate);
-
 var transport = nodemailer.createTransport({
     host: "smtp.mailtrap.io",
     port: 2525,
     auth: {
-        user: "5862134486f108",
-        pass: "f7215274c90982",
+        user: "8f6fd4c67e7b8c",
+        pass: "c9aaddf4e4feaf",
     },
 });
 
