@@ -1,7 +1,5 @@
 //TODO: forzar saltos de linea, por que fs2 en el generator
 
-import { createConstructSignature } from "typescript";
-
 const nodemailer = require("nodemailer");
 let fs = require("fs");
 const emailGenerator = require("./emailGenerator.ts");
