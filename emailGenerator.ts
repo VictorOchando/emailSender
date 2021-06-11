@@ -7,7 +7,7 @@ function buildEmailBody(news, userTags) {
     news.forEach((e) => {
         let included = false;
         let newsCategories = "";
-        e.tag.forEach((t) => {
+        e.tags.forEach((t) => {
             if (userTags.includes(t.name)) {
                 included = true;
             }
