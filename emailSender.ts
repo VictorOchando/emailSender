@@ -23,21 +23,22 @@ const options = {
 };
 
 axios
-    .get(process.env.apiUrl + "admin", options)
+    .get(process.env.apiUrl + "admin/", options)
     .then((r) => r.data)
     .then((r) =>
         r.forEach((element) => {
             let parentId = element._id;
             adminCrons.push({
                 id: element._id,
-                cron: new CronJob("* * * * *", () => {
+                cron: new CronJob(element.senddate, () => {
+                    console.log(element.senddate);
                     prepareEmails(parentId);
                 }),
             });
         })
     )
     .then(() => adminCrons.forEach((a) => a.cron.start()))
-    .catch((err) => console.log(err));
+    .catch((err) => console.log(err.message));
 //deberia comprobar si tiene una fecha valida antes de start, por si alguien tiene desactivado los envios
 
 app.get("/newadmin/:id", (req, res) => {
@@ -60,7 +61,7 @@ app.get("/newadmin/:id", (req, res) => {
             console.log("nuevo cron empezado");
             res.send();
         })
-        .catch((err) => console.log(err));
+        .catch((err) => console.log(err.message));
 });
 
 app.get("/settime/:id", (req, res) => {
@@ -75,7 +76,7 @@ app.get("/settime/:id", (req, res) => {
             adminCron.cron.start();
             res.send();
         })
-        .catch((err) => console.log(err));
+        .catch((err) => console.log(err.message));
 });
 
 function prepareEmails(id) {
@@ -137,7 +138,7 @@ var transport = nodemailer.createTransport({
 
 transport.verify(function (error) {
     if (error) {
-        console.log(error);
+        console.log(error.message);
     } else {
         console.log("Server is ready to take our messages");
     }
@@ -154,7 +155,7 @@ function sendEmail(bodyEmail, email) {
         },
         (error, info) => {
             if (error) {
-                return console.log(error);
+                return console.log(error.message);
             }
             console.log("Message sent: %s", email);
         }
