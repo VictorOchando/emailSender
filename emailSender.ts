@@ -27,13 +27,11 @@ axios
     .then((r) => r.data)
     .then((r) =>
         r.forEach((element) => {
-            console.log(element.senddate);
             let parentId = element._id;
             adminCrons.push({
                 id: element._id,
                 cron: new CronJob("* * * * *", () => {
                     prepareEmails(parentId);
-                    console.log(parentId);
                 }),
             });
         })
@@ -53,7 +51,6 @@ app.get("/newadmin/:id", (req, res) => {
                 id: r._id,
                 cron: new CronJob(r.senddate, function () {
                     prepareEmails(parentId);
-                    console.log(parentId);
                 }),
             });
         })
@@ -74,7 +71,7 @@ app.get("/settime/:id", (req, res) => {
         .then((r) => {
             let adminCron = adminCrons.find((admin) => admin.id == id);
             adminCron.cron.setTime(new CronTime(r.senddate));
-            console.log(r.senddate);
+            console.log("fecha cambiada a" + r.senddate);
             adminCron.cron.start();
             res.send();
         })
@@ -91,7 +88,6 @@ function prepareEmails(id: string) {
         ])
         .then(
             axios.spread((usersResponse, newsResponse) => {
-                console.log(users.length);
                 users = usersResponse.data;
                 news = newsResponse.data;
 
@@ -120,24 +116,24 @@ function buildEmail(users, news) {
         }
     });
 }
-//-----------------TRANSPORT DE SENDINBLUE--------------
-// var transport = nodemailer.createTransport({
-//     host: process.env.sendInBlueHost,
-//     port: process.env.sendInBluePort,
-//     auth: {
-//         user: process.env.sendInBlueUser,
-//         pass: process.env.sendInBluePass,
-//     },
-// });
 
 var transport = nodemailer.createTransport({
-    host: process.env.mailtrapHost,
-    port: process.env.mailtrapPort,
+    host: process.env.sendInBlueHost,
+    port: process.env.sendInBluePort,
     auth: {
-        user: process.env.mailtrapUser,
-        pass: process.env.mailtrapPass,
+        user: process.env.sendInBlueUser,
+        pass: process.env.sendInBluePass,
     },
 });
+
+// var transport = nodemailer.createTransport({
+//     host: process.env.mailtrapHost,
+//     port: process.env.mailtrapPort,
+//     auth: {
+//         user: process.env.mailtrapUser,
+//         pass: process.env.mailtrapPass,
+//     },
+// });
 
 transport.verify(function (error) {
     if (error) {
@@ -148,10 +144,9 @@ transport.verify(function (error) {
 });
 
 function sendEmail(bodyEmail, email) {
-    console.log("sent email");
     transport.sendMail(
         {
-            from: '"Newsletter FPCT" <hermesduck@hotmail.com>',
+            from: '"Newsletter FPCT" <hermesduck@gmail.com>',
             to: email,
             subject: "Newsletter personalizada de la FPCT",
             text: "text",
@@ -161,7 +156,7 @@ function sendEmail(bodyEmail, email) {
             if (error) {
                 return console.log(error);
             }
-            console.log("Message sent: %s", info.messageId);
+            console.log("Message sent: %s", email);
         }
     );
 }
