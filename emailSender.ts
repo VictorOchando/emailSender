@@ -16,15 +16,6 @@ let users = [];
 let news = [];
 let adminCrons = [];
 
-// let objetoPrueba = {
-//     id: "12356515125",
-//     cron: new CronJob("* * * * *", function () {
-//         //sendEmail("aaa", "victor_lp_gtr@hotmail.com");
-//         console.log("cronArtemisssssssss");
-//     }),
-// };
-// objetoPrueba.cron.start();
-
 const options = {
     headers: {
         Authorization: process.env.authToken,
@@ -41,7 +32,6 @@ axios
             adminCrons.push({
                 id: element._id,
                 cron: new CronJob("* * * * *", () => {
-                    //EJECUTAR EL CRONJOB
                     prepareEmails(parentId);
                     console.log(parentId);
                 }),
@@ -62,9 +52,7 @@ app.get("/newadmin/:id", (req, res) => {
             adminCrons.push({
                 id: r._id,
                 cron: new CronJob(r.senddate, function () {
-                    //getData(); --COMO PASARLE SU ID AQUI?
                     prepareEmails(parentId);
-                    //EJECUTAR EL CRONJOB
                     console.log(parentId);
                 }),
             });
@@ -75,7 +63,7 @@ app.get("/newadmin/:id", (req, res) => {
             console.log("nuevo cron empezado");
             res.send();
         })
-        .catch((err) => console.log(err)); //se podria buscar el id para mas seguridad
+        .catch((err) => console.log(err));
 });
 
 app.get("/settime/:id", (req, res) => {
@@ -91,54 +79,7 @@ app.get("/settime/:id", (req, res) => {
             res.send();
         })
         .catch((err) => console.log(err));
-    // axios
-    //     .get(process.env.apiUrl + "senddate", options)
-    //     .then((r) => r.data)
-    //     .then((r) => r[0].date)
-    //     .then((r) => cronTask.setTime(new CronTime(r)))
-    //     .then((r) => cronTask.start())
-    //     .then((r) => res.send(`Fecha cambiada correctamente`))
-    //     .catch((err) => console.log(err));
 });
-
-// cronTask = new CronJob("* * * * *", function () {
-//     //getData();
-//     //sendEmail("bbb", "victor_las_palmas@hotmail.com");
-//     console.log("cronTask");
-// });
-// cronTask.start();
-
-// cronArtemis = new CronJob("* * * * *", function () {
-//     //sendEmail("aaa", "victor_lp_gtr@hotmail.com");
-//     console.log("cronArtemis");
-// });
-// cronArtemis.start();
-
-// let cronTres = new CronJob("* * * * *", function () {
-//     //sendEmail();
-//     //sendEmail("c cc", "ochando3d@gmail.com");
-//     console.log("cronTres");
-// });
-// cronTres.start();
-
-//ACTUALIZAR FECHA DE ACTUALIZACION
-
-// function getData() {
-//     users = [];
-//     news = [];
-//     axios
-//         .all([
-//             axios.get(process.env.apiUrl + "users", options),
-//             axios.get(process.env.apiUrl + "news", options),
-//         ])
-//         .then(
-//             axios.spread((usersResponse, newsResponse) => {
-//                 users = usersResponse.data;
-//                 news = newsResponse.data;
-//                 buildEmail(users, news);
-//             })
-//         );
-// }
 
 function prepareEmails(id: string) {
     users = [];
@@ -205,9 +146,6 @@ transport.verify(function (error) {
         console.log("Server is ready to take our messages");
     }
 });
-
-//TEMPORAL PARA LANZARLO SIN CRON
-//getData();
 
 function sendEmail(bodyEmail, email) {
     console.log("sent email");
