@@ -78,7 +78,7 @@ app.get("/settime/:id", (req, res) => {
         .catch((err) => console.log(err));
 });
 
-function prepareEmails(id: string) {
+function prepareEmails(id) {
     users = [];
     news = [];
     axios
