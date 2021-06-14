@@ -27,10 +27,11 @@ axios
     .then((r) => r.data)
     .then((r) =>
         r.forEach((element) => {
+            console.log(element.senddate);
             let parentId = element._id;
             adminCrons.push({
                 id: element._id,
-                cron: new CronJob(element.senddate, () => {
+                cron: new CronJob(element.senddate, function () {
                     console.log(element.senddate);
                     prepareEmails(parentId);
                 }),
@@ -40,6 +41,13 @@ axios
     .then(() => adminCrons.forEach((a) => a.cron.start()))
     .catch((err) => console.log(err.message));
 //deberia comprobar si tiene una fecha valida antes de start, por si alguien tiene desactivado los envios
+
+app.post("/recover", (req, res) => {
+    let recoverToken = req.body.recoverToken;
+    let email = req.body.email;
+    let recoverEmail = `<div>${recoverToken}</div>`;
+    sendEmail(recoverEmail, email);
+});
 
 app.get("/newadmin/:id", (req, res) => {
     let id = req.params.id;
@@ -105,6 +113,7 @@ function buildEmail(users, news) {
         u.tags.forEach((element) => {
             tags.push(element.name);
         });
+
         let builtEmailBody = emailGenerator(news, tags);
         if (builtEmailBody) {
             console.log("builtemail");
