@@ -16,6 +16,8 @@ let users = [];
 let news = [];
 let adminCrons = [];
 
+app.use(express.json());
+
 const options = {
     headers: {
         Authorization: process.env.authToken,
@@ -43,10 +45,20 @@ axios
 //deberia comprobar si tiene una fecha valida antes de start, por si alguien tiene desactivado los envios
 
 app.post("/recover", (req, res) => {
+    //console.log(req);
     let recoverToken = req.body.recoverToken;
     let email = req.body.email;
-    let recoverEmail = `<div>${recoverToken}</div>`;
+
+    let recoverEmail = fs
+        .readFileSync("./templates/recoverBody.html")
+        .toString()
+        .replace(
+            "##$#recoverUrl#$##",
+            `hermesduck.com/recover/${recoverToken}`
+        );
+
     sendEmail(recoverEmail, email);
+    res.send("mensaje recibido");
 });
 
 app.get("/newadmin/:id", (req, res) => {
@@ -127,6 +139,8 @@ function buildEmail(users, news) {
     });
 }
 
+function buildRecoverEmail(email, token) {}
+
 var transport = nodemailer.createTransport({
     host: process.env.sendInBlueHost,
     port: process.env.sendInBluePort,
@@ -156,7 +170,7 @@ transport.verify(function (error) {
 function sendEmail(bodyEmail, email) {
     transport.sendMail(
         {
-            from: '"Newsletter FPCT" <hermesduck@gmail.com>',
+            from: '"Newsletter FPCT" <hermesduck@gmail.com>', //cambiar para hacer dinamico
             to: email,
             subject: "Newsletter personalizada de la FPCT",
             text: "text",

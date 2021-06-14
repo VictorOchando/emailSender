@@ -1,6 +1,6 @@
 //POR QUE TENGO QUE USAR FS2???? esto de que va junior
 const fs2 = require("fs");
-let bodyTemplate = fs2.readFileSync("./templates/newsBody.html").toString();
+//let bodyTemplate = fs2.readFileSync("./templates/newsBody.html").toString();
 
 function buildEmailBody(news, userTags) {
     let newsConcat = "";
@@ -14,7 +14,9 @@ function buildEmailBody(news, userTags) {
             newsCategories = newsCategories + `[${t.name}] `;
         });
         if (included) {
-            let newsBodyTemporal = bodyTemplate
+            let newsBodyTemporal = fs2
+                .readFileSync("./templates/newsBody.html")
+                .toString()
                 .replace("##$#categories#$##", newsCategories)
                 .replace("##$#newsTitle#$##", e.title)
                 .replace("##$#news#$##", e.body)
@@ -25,5 +27,13 @@ function buildEmailBody(news, userTags) {
 
     return newsConcat;
 }
+// function buildRecoverBody(token) {
+//     let newsBodyTemporal = fs2
+//         .readFileSync("./templates/recoverBody.html")
+//         .toString()
+//         .replace("##$#recoverUrl#$##", `hermesduck.com/recover/${token}`);
+
+//     return newsBodyTemporal;
+// }
 
 module.exports = buildEmailBody;
