@@ -14,6 +14,7 @@ let cronArtemis;
 
 let users = [];
 let news = [];
+let custom = {};
 let adminCrons = [];
 
 app.use(express.json());
@@ -24,32 +25,7 @@ const options = {
     },
 };
 
-axios
-    .get(process.env.apiUrl + "admin/", options)
-    .then((r) => r.data)
-    .then((r) =>
-        r.forEach((element) => {
-            console.log(element.senddate);
-            let parentId = element._id;
-            adminCrons.push({
-                id: element._id,
-                cron: new CronJob(element.senddate, function () {
-                    console.log(element.senddate);
-                    prepareEmails(parentId);
-                }),
-                sendstate: element.sendstate,
-            });
-        })
-    )
-    .then(() =>
-        adminCrons.forEach((a) => {
-            if (a.sendstate) {
-                a.cron.start();
-            }
-        })
-    )
-    .catch((err) => console.log(err.message));
-//deberia comprobar si tiene una fecha valida antes de start, por si alguien tiene desactivado los envios
+initialize();
 
 app.post("/recover", (req, res) => {
     //console.log(req);
@@ -61,10 +37,15 @@ app.post("/recover", (req, res) => {
         .toString()
         .replace(
             "##$#recoverUrl#$##",
-            `hermesduck.com/recover/${recoverToken}`
+            `hermesduck.com/#/recover/${recoverToken}`
         );
 
-    sendEmail(recoverEmail, email);
+    sendEmail(
+        recoverEmail,
+        email,
+        "HermesDuck <hermesduck@gmail.com>",
+        "Restablecimiento de contraseña"
+    );
     res.send("mensaje recibido");
 });
 
@@ -77,6 +58,7 @@ app.get("/newadmin/:id", (req, res) => {
             let parentId = r._id;
             adminCrons.push({
                 id: r._id,
+                //custom: r.newsletterCustom,
                 cron: new CronJob(r.senddate, function () {
                     prepareEmails(parentId);
                 }),
@@ -111,27 +93,111 @@ app.get("/settime/:id", (req, res) => {
         .catch((err) => console.log(err.message));
 });
 
+function initialize() {
+    axios
+        .get(process.env.apiUrl + "admin/", options)
+        .then((r) => r.data)
+        .then((r) =>
+            r.forEach((element) => {
+                console.log(element.senddate);
+                let parentId = element._id;
+                //let customParent = element.newsletterCustom;
+                adminCrons.push({
+                    id: element._id,
+                    //custom: element.newsletterCustom,
+                    cron: new CronJob(element.senddate, function () {
+                        console.log(element.senddate);
+                        prepareEmails(parentId);
+                    }),
+                    sendstate: element.sendstate,
+                });
+            })
+        )
+        .then(() =>
+            adminCrons.forEach((a) => {
+                if (a.sendstate) {
+                    a.cron.start();
+                }
+            })
+        )
+        .catch((err) => console.log(err.message));
+}
+
 function prepareEmails(id) {
     users = [];
     news = [];
+    custom = {};
+
     axios
         .all([
             axios.get(process.env.apiUrl + "users/owner/" + id, options),
             axios.get(process.env.apiUrl + "news/owner/" + id, options),
+            axios.get(process.env.apiUrl + "admin/", options),
         ])
         .then(
-            axios.spread((usersResponse, newsResponse) => {
+            axios.spread((usersResponse, newsResponse, adminsResponse) => {
                 users = usersResponse.data;
                 news = newsResponse.data;
+                custom = adminsResponse.data.find(
+                    (admin) => admin._id == id
+                ).newsletterCustom;
 
                 if (users.length > 0 && news.length > 0) {
-                    buildEmail(users, news);
+                    buildEmail(users, news, custom);
                 }
             })
         );
 }
 
-function buildEmail(users, news) {
+function buildEmail(users, news, custom) {
+    let builtCustomized = fs
+        .readFileSync("./templates/newsTemplate.html")
+        .toString()
+        .replace("##$#headerImgLink#$##", custom.headerImgLink)
+        .replace("##$#headerTitle#$##", custom.headerTitle)
+        .replace("##$#headerText#$##", custom.headerText)
+        .replace("##$#footerText1#$##", custom.footerText1)
+        .replace("##$#footerText2#$##", custom.footerText2)
+        .replace("##$#webUrl#$##", custom.webUrl)
+        .replace("##$#webText#$##", custom.webText)
+        .replace("##$#footerDirections#$##", custom.footerDirections);
+
+    // if (custom.headerImgLink) {
+    //     builtEmail.replace("##$#headerImgLink#$##", custom.headerImgLink);
+    // } else {
+    //     builtEmail.replace("##$#headerImgLink#$##", "");
+    // }
+    // if (custom.headerTitle) {
+    //     builtEmail.replace("##$#headerTitle#$##", custom.headerTitle);
+    // } else {
+    //     builtEmail.replace("##$#headerTitle#$##", "");
+    // }
+    // if (custom.headerText) {
+    //     builtEmail.replace("##$#headerText#$##", custom.headerText);
+    // } else {
+    //     builtEmail.replace("##$#headerText#$##", "");
+    // }
+    // if (custom.footerText1) {
+    //     builtEmail.replace("##$#footerText1#$##", custom.footerText1);
+    // } else {
+    //     builtEmail.replace("##$#footerText1#$##", "");
+    // }
+    // if (custom.footerText2) {
+    //     builtEmail.replace("##$#footerText2#$##", custom.footerText2);
+    // } else {
+    //     builtEmail.replace("##$#footerText2#$##", "");
+    // }
+    // if (custom.webUrl) {
+    //     builtEmail.replace("##$#webUrl#$##", custom.webUrl);
+    // } else {
+    //     builtEmail.replace("##$#webUrl#$##", "");
+    // }
+    // if (custom.webText) {
+    //     builtEmail.replace("##$#webText#$##", custom.webText);
+    // } else {
+    //     builtEmail.replace("##$#webText#$##", "");
+    // }
+
     users.forEach((u) => {
         let tags = [];
         u.tags.forEach((element) => {
@@ -140,51 +206,27 @@ function buildEmail(users, news) {
 
         let builtEmailBody = emailGenerator(news, tags);
         if (builtEmailBody) {
-            console.log("builtemail");
-            let builtEmail = fs
-                .readFileSync("./templates/newsTemplate.html")
-                .toString()
-                .replace("##$#newsBody#$##", builtEmailBody);
+            let builtEmail = builtCustomized.replace(
+                "##$#newsBody#$##",
+                builtEmailBody
+            );
 
-            sendEmail(builtEmail, u.email);
+            sendEmail(
+                builtEmail,
+                u.email,
+                custom.emailFrom,
+                custom.emailSubject
+            );
         }
     });
 }
 
-function buildRecoverEmail(email, token) {}
-
-var transport = nodemailer.createTransport({
-    host: process.env.sendInBlueHost,
-    port: process.env.sendInBluePort,
-    auth: {
-        user: process.env.sendInBlueUser,
-        pass: process.env.sendInBluePass,
-    },
-});
-
-// var transport = nodemailer.createTransport({
-//     host: process.env.mailtrapHost,
-//     port: process.env.mailtrapPort,
-//     auth: {
-//         user: process.env.mailtrapUser,
-//         pass: process.env.mailtrapPass,
-//     },
-// });
-
-transport.verify(function (error) {
-    if (error) {
-        console.log(error.message);
-    } else {
-        console.log("Server is ready to take our messages");
-    }
-});
-
-function sendEmail(bodyEmail, email) {
+function sendEmail(bodyEmail, email, from, subject) {
     transport.sendMail(
         {
-            from: '"Newsletter FPCT" <hermesduck@gmail.com>', //cambiar para hacer dinamico
+            from: from, //"FPCT <hermesduck@gmail.com>", //cambiar para hacer dinamico
             to: email,
-            subject: "Newsletter personalizada de la FPCT",
+            subject: "subject",
             text: "text",
             html: bodyEmail,
         },
@@ -197,6 +239,33 @@ function sendEmail(bodyEmail, email) {
     );
 }
 
+var transport = nodemailer.createTransport({
+    host: process.env.sendInBlueHost,
+    port: process.env.sendInBluePort,
+    auth: {
+        user: process.env.sendInBlueUser,
+        pass: process.env.sendInBluePass,
+    },
+});
+
+transport.verify(function (error) {
+    if (error) {
+        console.log(error.message);
+    } else {
+        console.log("Server is ready to take our messages");
+    }
+});
+
 app.listen(port, () => {
     console.log(`emailSender escuchando en el puerto ${port}`);
 });
+
+//----DEBUG ----
+// var transport = nodemailer.createTransport({
+//     host: process.env.mailtrapHost,
+//     port: process.env.mailtrapPort,
+//     auth: {
+//         user: process.env.mailtrapUser,
+//         pass: process.env.mailtrapPass,
+//     },
+// });
