@@ -37,10 +37,17 @@ axios
                     console.log(element.senddate);
                     prepareEmails(parentId);
                 }),
+                sendstate: element.sendstate,
             });
         })
     )
-    .then(() => adminCrons.forEach((a) => a.cron.start()))
+    .then(() =>
+        adminCrons.forEach((a) => {
+            if (a.sendstate) {
+                a.cron.start();
+            }
+        })
+    )
     .catch((err) => console.log(err.message));
 //deberia comprobar si tiene una fecha valida antes de start, por si alguien tiene desactivado los envios
 
@@ -50,7 +57,7 @@ app.post("/recover", (req, res) => {
     let email = req.body.email;
 
     let recoverEmail = fs
-        .readFileSync("./templates/recoverBody.html")
+        .readFileSync("./templates/recoverTemplate.html")
         .toString()
         .replace(
             "##$#recoverUrl#$##",
@@ -73,12 +80,15 @@ app.get("/newadmin/:id", (req, res) => {
                 cron: new CronJob(r.senddate, function () {
                     prepareEmails(parentId);
                 }),
+                sendstate: r.sendstate,
             });
         })
         .then(() => {
             let adminCron = adminCrons.find((admin) => admin.id == id);
-            adminCron.cron.start();
-            console.log("nuevo cron empezado");
+            if (adminCron.sendstate) {
+                adminCron.cron.start();
+                console.log("nuevo cron empezado");
+            }
             res.send();
         })
         .catch((err) => console.log(err.message));
@@ -93,7 +103,9 @@ app.get("/settime/:id", (req, res) => {
             let adminCron = adminCrons.find((admin) => admin.id == id);
             adminCron.cron.setTime(new CronTime(r.senddate));
             console.log("fecha cambiada a" + r.senddate);
-            adminCron.cron.start();
+            if (adminCron.sendstate) {
+                adminCron.cron.start();
+            }
             res.send();
         })
         .catch((err) => console.log(err.message));
