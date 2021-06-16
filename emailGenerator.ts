@@ -21,19 +21,15 @@ function buildEmailBody(news, userTags) {
                 .replace("##$#newsTitle#$##", e.title)
                 .replace("##$#news#$##", e.body)
                 .replace("##$#newsUrl#$##", e.link);
+
+            if (e.link == "") {
+                newsBodyTemporal.replace("Link a la noticia", "");
+            }
             newsConcat = newsConcat + newsBodyTemporal;
         }
     });
 
     return newsConcat;
 }
-// function buildRecoverBody(token) {
-//     let newsBodyTemporal = fs2
-//         .readFileSync("./templates/recoverBody.html")
-//         .toString()
-//         .replace("##$#recoverUrl#$##", `hermesduck.com/recover/${token}`);
-
-//     return newsBodyTemporal;
-// }
 
 module.exports = buildEmailBody;
