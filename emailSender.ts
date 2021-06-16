@@ -153,14 +153,15 @@ function buildEmail(users, news, custom) {
     let builtCustomized = fs
         .readFileSync("./templates/newsTemplate.html")
         .toString()
-        .replace("##$#headerImgLink#$##", custom.headerImgLink)
+        .replace("##$#headerImgLink#$##", custom.templateImage)
         .replace("##$#headerTitle#$##", custom.headerTitle)
         .replace("##$#headerText#$##", custom.headerText)
-        .replace("##$#footerText1#$##", custom.footerText1)
-        .replace("##$#footerText2#$##", custom.footerText2)
+        .replace("##$#footerText1#$##", custom.footer1)
+        .replace("##$#footerText2#$##", custom.footer2)
         .replace("##$#webUrl#$##", custom.webUrl)
         .replace("##$#webText#$##", custom.webText)
-        .replace("##$#footerDirections#$##", custom.footerDirections);
+        .replace("##$#footerDirections#$##", custom.footerDirection)
+        .replace("#ffa73b", custom.templateColor);
 
     // if (custom.headerImgLink) {
     //     builtEmail.replace("##$#headerImgLink#$##", custom.headerImgLink);
@@ -227,7 +228,7 @@ function sendEmail(bodyEmail, email, from, subject) {
             from: from, //"FPCT <hermesduck@gmail.com>", //cambiar para hacer dinamico
             to: email,
             subject: "subject",
-            text: "text",
+            text: "",
             html: bodyEmail,
         },
         (error, info) => {
