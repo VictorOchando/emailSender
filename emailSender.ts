@@ -161,7 +161,7 @@ function buildEmail(users, news, custom) {
         .replace("##$#webUrl#$##", custom.webUrl)
         .replace("##$#webText#$##", custom.webText)
         .replace("##$#footerDirections#$##", custom.footerDirection)
-        .replaceAll("#ffa73b", custom.templateColor);
+        .replace(/#ffa73b/g, custom.templateColor);
 
     // if (custom.headerImgLink) {
     //     builtEmail.replace("##$#headerImgLink#$##", custom.headerImgLink);
@@ -227,7 +227,7 @@ function sendEmail(bodyEmail, email, from, subject) {
         {
             from: from, //"FPCT <hermesduck@gmail.com>", //cambiar para hacer dinamico
             to: email,
-            subject: "subject",
+            subject: subject,
             text: "",
             html: bodyEmail,
         },
