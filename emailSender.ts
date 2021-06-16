@@ -163,42 +163,6 @@ function buildEmail(users, news, custom) {
         .replace("##$#footerDirections#$##", custom.footerDirection)
         .replace(/#ffa73b/g, custom.templateColor);
 
-    // if (custom.headerImgLink) {
-    //     builtEmail.replace("##$#headerImgLink#$##", custom.headerImgLink);
-    // } else {
-    //     builtEmail.replace("##$#headerImgLink#$##", "");
-    // }
-    // if (custom.headerTitle) {
-    //     builtEmail.replace("##$#headerTitle#$##", custom.headerTitle);
-    // } else {
-    //     builtEmail.replace("##$#headerTitle#$##", "");
-    // }
-    // if (custom.headerText) {
-    //     builtEmail.replace("##$#headerText#$##", custom.headerText);
-    // } else {
-    //     builtEmail.replace("##$#headerText#$##", "");
-    // }
-    // if (custom.footerText1) {
-    //     builtEmail.replace("##$#footerText1#$##", custom.footerText1);
-    // } else {
-    //     builtEmail.replace("##$#footerText1#$##", "");
-    // }
-    // if (custom.footerText2) {
-    //     builtEmail.replace("##$#footerText2#$##", custom.footerText2);
-    // } else {
-    //     builtEmail.replace("##$#footerText2#$##", "");
-    // }
-    // if (custom.webUrl) {
-    //     builtEmail.replace("##$#webUrl#$##", custom.webUrl);
-    // } else {
-    //     builtEmail.replace("##$#webUrl#$##", "");
-    // }
-    // if (custom.webText) {
-    //     builtEmail.replace("##$#webText#$##", custom.webText);
-    // } else {
-    //     builtEmail.replace("##$#webText#$##", "");
-    // }
-
     users.forEach((u) => {
         let tags = [];
         u.tags.forEach((element) => {
