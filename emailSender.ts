@@ -150,6 +150,7 @@ function prepareEmails(id) {
 }
 
 function buildEmail(users, news, custom) {
+    let emailFrom = custom.alias + " <" + custom.email + ">";
     let builtCustomized = fs
         .readFileSync("./templates/newsTemplate.html")
         .toString()
@@ -176,12 +177,7 @@ function buildEmail(users, news, custom) {
                 builtEmailBody
             );
 
-            sendEmail(
-                builtEmail,
-                u.email,
-                custom.emailFrom,
-                custom.emailSubject
-            );
+            sendEmail(builtEmail, u.email, emailFrom, custom.subject);
         }
     });
 }
