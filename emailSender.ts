@@ -161,7 +161,7 @@ function buildEmail(users, news, custom) {
         .replace("##$#webUrl#$##", custom.webUrl)
         .replace("##$#webText#$##", custom.webText)
         .replace("##$#footerDirections#$##", custom.footerDirection)
-        .replace("#ffa73b", custom.templateColor);
+        .replaceAll("#ffa73b", custom.templateColor);
 
     // if (custom.headerImgLink) {
     //     builtEmail.replace("##$#headerImgLink#$##", custom.headerImgLink);
